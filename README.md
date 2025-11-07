@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+
+# KeepUp
+
+_Habit tracking that helps your resolutions stick._
+
+</div>
+
+## Purpose
+
+KeepUp is a personal productivity app designed to transform New Year resolutions into repeatable habits. Plan meaningful goals, build the behaviors that support them, and monitor daily progress with accountable check-ins.
+
+## Tech Stack
+
+- **Next.js 16** (App Router) for the frontend and API routes
+- **Supabase** for authentication and PostgreSQL storage
+- **Tailwind CSS** for styling and rapid UI building
+- **TypeScript** for type safety across the stack
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+   ```bash
+   pnpm install
+   ```
+
+2. Add your Supabase project credentials to `.env.local` (created for you in this repo).
+
+3. Run the development server:
+
+   ```bash
+   pnpm dev
+   ```
+
+4. Visit `http://localhost:3000` to explore the app.
+
+## Environment Variables
+
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Both keys are available in your Supabase dashboard under **Project Settings → API**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database Schema (Supabase SQL)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run the following script in the Supabase SQL Editor to create the core tables:
 
-## Learn More
+```sql
+create table if not exists public.resolutions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  title text not null,
+  description text,
+  created_at timestamptz not null default now()
+);
 
-To learn more about Next.js, take a look at the following resources:
+create table if not exists public.habits (
+  id uuid primary key default gen_random_uuid(),
+  resolution_id uuid not null references public.resolutions (id) on delete cascade,
+  title text not null,
+  frequency text check (frequency in ('daily', 'weekly')) not null,
+  created_at timestamptz not null default now()
+);
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+create table if not exists public.checkins (
+  id uuid primary key default gen_random_uuid(),
+  habit_id uuid not null references public.habits (id) on delete cascade,
+  checkin_date date not null,
+  completed boolean not null default true,
+  created_at timestamptz not null default now(),
+  unique (habit_id, checkin_date)
+);
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Development Commands
 
-## Deploy on Vercel
+- `pnpm dev` – start the local Next.js dev server
+- `pnpm lint` – run ESLint with the project configuration
+- `pnpm build` – generate an optimized production build
+- `pnpm start` – serve the production build
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Next Steps
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Connect forms to Supabase and hydrate the dashboard with live data
+- Add reminder scheduling and analytics
+- Harden authentication with Supabase Auth Helpers middleware
