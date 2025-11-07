@@ -1,6 +1,11 @@
-import Link from "next/link";
+"use client";
 
-import { ensureAuthenticated } from "@/lib/utils";
+import { useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/hooks/useAuth";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface ResolutionPageProps {
   params: {
@@ -8,11 +13,24 @@ interface ResolutionPageProps {
   };
 }
 
-export default async function ResolutionDetailPage({
-  params,
-}: ResolutionPageProps) {
+export default function ResolutionDetailPage({ params }: ResolutionPageProps) {
   const { resolutionId } = params;
-  await ensureAuthenticated();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/sign-in");
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!user) {
+    return null; // Will redirect via useEffect
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-6 py-12">
