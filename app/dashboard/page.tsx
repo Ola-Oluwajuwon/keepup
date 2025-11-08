@@ -146,7 +146,7 @@ export default function DashboardPage() {
                     </h3>
                     {resolution.why_text && (
                       <p className="mt-2 text-sm text-slate-600 italic">
-                        "{resolution.why_text}"
+                        &ldquo;{resolution.why_text}&rdquo;
                       </p>
                     )}
                     {resolution.description && (

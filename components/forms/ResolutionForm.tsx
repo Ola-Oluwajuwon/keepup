@@ -46,8 +46,8 @@ export function ResolutionForm({ onCreated }: { onCreated?: () => void }) {
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const startDate = watch("start_date");
-  const targetDate = watch("target_date");
 
   const onSubmit = handleSubmit((values) => {
     setErrorMessage(null);
@@ -61,21 +61,23 @@ export function ResolutionForm({ onCreated }: { onCreated?: () => void }) {
     }
 
     // Get session token and send it with the request
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-      
-      if (session?.access_token) {
-        headers.Authorization = `Bearer ${session.access_token}`;
-      }
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
 
-      return fetch("/api/resolutions", {
-        method: "POST",
-        headers,
-        body: JSON.stringify(values),
-      });
-    })
+        if (session?.access_token) {
+          headers.Authorization = `Bearer ${session.access_token}`;
+        }
+
+        return fetch("/api/resolutions", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(values),
+        });
+      })
       .then(async (response) => {
         if (!response.ok) {
           const payload = await response.json().catch(() => ({}));
@@ -166,9 +168,7 @@ export function ResolutionForm({ onCreated }: { onCreated?: () => void }) {
             })}
           />
           {errors.start_date ? (
-            <p className="text-sm text-red-600">
-              {errors.start_date.message}
-            </p>
+            <p className="text-sm text-red-600">{errors.start_date.message}</p>
           ) : null}
         </div>
 
@@ -194,18 +194,13 @@ export function ResolutionForm({ onCreated }: { onCreated?: () => void }) {
             })}
           />
           {errors.target_date ? (
-            <p className="text-sm text-red-600">
-              {errors.target_date.message}
-            </p>
+            <p className="text-sm text-red-600">{errors.target_date.message}</p>
           ) : null}
         </div>
       </div>
 
       <div className="space-y-2">
-        <label
-          htmlFor="privacy"
-          className="text-sm font-medium text-slate-700"
-        >
+        <label htmlFor="privacy" className="text-sm font-medium text-slate-700">
           Privacy
         </label>
         <select

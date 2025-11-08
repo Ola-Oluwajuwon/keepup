@@ -30,7 +30,7 @@ export default function NewResolutionPage() {
         const headers: HeadersInit = {
           "Content-Type": "application/json",
         };
-        
+
         if (session?.access_token) {
           headers.Authorization = `Bearer ${session.access_token}`;
         }
@@ -98,9 +98,9 @@ export default function NewResolutionPage() {
             Maximum resolutions reached
           </h2>
           <p className="mt-2 text-sm text-amber-800">
-            You've reached the maximum of {MAX_CONCURRENT_RESOLUTIONS} active
-            resolutions. Complete or archive one of your existing resolutions
-            to create a new one.
+            You&apos;ve reached the maximum of {MAX_CONCURRENT_RESOLUTIONS}{" "}
+            active resolutions. Complete or archive one of your existing
+            resolutions to create a new one.
           </p>
           <Link
             href="/dashboard"
@@ -117,4 +117,3 @@ export default function NewResolutionPage() {
     </div>
   );
 }
-
