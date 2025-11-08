@@ -1,10 +1,6 @@
-"use server";
-
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
-
-import { supabase } from "./supabaseClient";
+import { createSupabaseServerClient } from "./supabaseServer";
 
 export function getBearerTokenFromRequest(
   request: Request
@@ -18,22 +14,34 @@ export function getBearerTokenFromRequest(
 export async function getAuthenticatedUser(
   accessToken?: string
 ): Promise<User | null> {
-  let token = accessToken;
+  try {
+    // If token is provided, use it directly
+    if (accessToken) {
+      const supabase = await createSupabaseServerClient(accessToken);
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) {
+        return null;
+      }
+      return data.user;
+    }
 
-  if (!token) {
-    const store = cookies();
-    token =
-      store.get("sb-access-token")?.value ??
-      store.get("supabase-auth-token")?.value ??
-      undefined;
-  }
+    // Otherwise, try to get user from the server client
+    // This will use the session from cookies if available
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data.user) {
+    if (error || !user) {
+      return null;
+    }
+
+    return user;
+  } catch (error) {
+    console.error("Error getting authenticated user:", error);
     return null;
   }
-
-  return data.user;
 }
 
 export async function ensureAuthenticated(accessToken?: string) {
